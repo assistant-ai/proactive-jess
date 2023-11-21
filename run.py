@@ -3,31 +3,35 @@ import json
 
 class Run(object):
 
-    def __init__(self, run_id, thread_id, client, messages_handler, actions):
+    def __init__(self, run_id, thread_id, client, messages_handler, actions, logger):
         self.run_id = run_id
         self.thread_id = thread_id
         self.client = client
         self.messages_handler = messages_handler
         self.actions = actions
+        self.logger = logger
+        self._finished = False
 
     def run_status(self):
-        return self.client.beta.threads.runs.retrieve(
+        status = self.client.beta.threads.runs.retrieve(
             thread_id=self.thread_id,
             run_id=self.run_id
         ).status
+        self.logger.debug(f"run status: {status}")
+        return status
     
     def cancel(self):
         self.client.beta.threads.runs.cancel(
             thread_id=self.thread_id,
             run_id=self.run_id
         )
+        self._finished = True
 
     def finished(self):
-        run_status = self.run_status()
-        return run_status in ["completed", "failed", "canceled", "expired"]
+        return self._finished
     
     def execute(self):
-        while not self.finished():
+        while self.run_status() not in ["completed", "failed", "canceled", "expired"]:
             if self.run_status() == "in_progress":
                 pass
             elif self.run_status() == "cancelling":
@@ -35,16 +39,23 @@ class Run(object):
             elif self.run_status() == "requires_action":
                 self._handle_actions()
             time.sleep(1)
+        self.logger.debug("looks like we are done, checking if completed succesfully")
         if self.run_status() == "completed":
+            self.logger.debug("success, now checking messages to send")
             self.messages_handler.on_messages(self._extract_messages())
+        self._finished = True
 
     def _extract_messages(self):
+        self.logger.debug("starting messages extraction")
         messages = self.client.beta.threads.messages.list(
             thread_id=self.thread_id
         )
+        for message in messages:
+            self.logger.debug(f"message_run_id: {message.run_id}, our run_id: {self.run_id}, value: {message.content[0].text.value}")
         return [message.content[0].text.value for message in messages if message.run_id == self.run_id]        
 
     def _handle_actions(self):
+        self.logger.debug("strting handle action step")
         run_data = self.client.beta.threads.runs.retrieve(
             thread_id=self.thread_id,
             run_id=self.run_id

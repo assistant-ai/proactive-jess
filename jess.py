@@ -71,7 +71,7 @@ class Jess(object):
         self._send_system_message_about_action()
         
     def _send_message(self, message_to_send):
-        while not self.run.finished():
+        while self.run and not self.run.finished():
             time.sleep(1)
         
         self.client.beta.threads.messages.create(
@@ -85,15 +85,18 @@ class Jess(object):
         )
         self.run = Run(run.id, self.thread.id, self.client, self, {
             "schedule_message": self._schedule_message
-        })        
+        }, logger)  
+        self.run.execute()      
 
     def _schedule_message(self, sec_delay, message):
         self.next_action_time = time.time() + int(sec_delay)
         self.next_message = message
+        return "DONE"
 
     def on_messages(self, messages):
         for message in messages:
-            print("Jess: " + message + "\n")
+            if message:
+                print("Jess: " + message + "\n")
 
     def _send_system_message_about_action(self):
         self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first.")
@@ -102,13 +105,13 @@ class Jess(object):
         logger.debug("Starting Jess")
         while not self.stopped:
             logger.debug("Checking run status")
-            if time.time() >= self.next_action_time:
+            if self.next_action_time and time.time() >= self.next_action_time:
                 logger.debug("now")
                 self.on_messages([self.next_message])
                 self.next_action_time = None
                 self.next_message = None
                 self._send_system_message_about_action()
-                time.sleep(2)
+            time.sleep(2)
 
     @staticmethod
     def start():
