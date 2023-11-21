@@ -1,23 +1,42 @@
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram import Bot
 from dotenv import load_dotenv
+from jess import Jess
 import os
 
 load_dotenv()
 
+chat_id = os.getenv('TELEGRAM_CHAT_ID')
+bot = Bot(token=os.getenv('TELEGRAM_TOKEN'))
+
 async def start(update, context):
     await update.message.reply_text('Hello! I am your bot.')
 
-async def echo(update, context):
-    await update.message.reply_text(update.message.text)
+async def message(update, context):
+    jess.send_message(update.message.text)
 
+async def get_chat_id(update, context):
+    chat_id = update.message.chat_id
+    await update.message.reply_text(f"Your chat ID is: {chat_id}")
+
+async def message_handler(meesage):
+    await bot.send_message(chat_id=chat_id, text=meesage)
+
+jess = Jess.start(message_handler)
+# # while loop with the read from keyboard and send message
+# while True:
+#     message_to_send = input("You: ")
+#     jess.send_message(message_to_send)
+#     time.sleep(3)
 
 def main():
     token = os.getenv('TELEGRAM_TOKEN') 
     application = Application.builder().token(token).build()
     start_handler = CommandHandler('start', start)
+    start_handler = CommandHandler('get_chat_id', get_chat_id)
     application.add_handler(start_handler)
 
-    echo_handler = MessageHandler(filters.TEXT, echo)
+    echo_handler = MessageHandler(filters.TEXT, message)
     application.add_handler(echo_handler)
 
     application.run_polling()

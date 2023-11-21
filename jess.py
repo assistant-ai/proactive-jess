@@ -47,7 +47,7 @@ function_to_schedule_message = {
 
 class Jess(object):
 
-    def __init__(self, client, assistent) -> None:
+    def __init__(self, client, assistent, message_handler) -> None:
         self.run = None
         self.thread = client.beta.threads.create(
             messages=[]
@@ -57,6 +57,7 @@ class Jess(object):
         self.client = client
         self.next_action_time = None
         self.next_message = None
+        self.message_handler = message_handler
 
     def stop(self):
         self.stopped = True
@@ -96,7 +97,7 @@ class Jess(object):
     def on_messages(self, messages):
         for message in messages:
             if message:
-                print("Jess: " + message + "\n")
+                self.message_handler.on_message(message)
 
     def _send_system_message_about_action(self):
         self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first.")
@@ -114,7 +115,7 @@ class Jess(object):
             time.sleep(2)
 
     @staticmethod
-    def start():
+    def start(message_handler):
         JESS_NAME = "Jess"
         client = OpenAI()
         jess_assitent_args = {
@@ -141,13 +142,16 @@ class Jess(object):
                 assistant_id=jess_assitent.id,
                 **jess_assitent_args
             )
-        jess = Jess(client, jess_assitent)
+        jess = Jess(client, jess_assitent, message_handler)
         thread = threading.Thread(target=jess.execute)
         thread.start()
         return jess
 
+def message_handler(message):
+    print("jess: " + message + "\n")
+
 if __name__ == "__main__":
-    jess = Jess.start()
+    jess = Jess.start(message_handler)
     # while loop with the read from keyboard and send message
     while True:
         message_to_send = input("You: ")
