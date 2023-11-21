@@ -5,6 +5,7 @@ import sys
 import json
 
 from openai import OpenAI
+from run import Run
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -61,38 +62,30 @@ class Jess(object):
     def stop(self):
         self.stopped = True
 
-    def cancel_current_run(self):
-        self.lock.acquire()
-        if not self.run:
-            self.lock.release()
-            return
-        run_status = self.client.beta.threads.runs.retrieve(
-            thread_id=self.thread.id,
-            run_id=self.run.id
-        )
-        if run_status.status != "requires_action":
-            self.lock.release()
-            return
-        self.client.beta.threads.runs.cancel(
-            thread_id=self.thread.id,
-            run_id=self.run.id
-        )
-        self.run = None
-        self.lock.release()
+    def _cancel_scheduled_message(self):
+        self.next_action_time = None
+        self.next_message = None
         
     def send_message(self, message_to_send):
-        self.cancel_current_run()
+        self._cancel_scheduled_message()
         self.lock.acquire()
-        self.client.beta.threads.messages.create(
-            thread_id=self.thread.id,
-            role="user",
-            content=message_to_send
-        )
-        self.run = self.client.beta.threads.runs.create(
-            thread_id=self.thread.id,
-            assistant_id=self.assistent.id
-        )
-        self.lock.release()
+        if self.run:
+            self.run.cancel()
+        self.run = Run(self.thread.id, self.client, self)
+        # self.client.beta.threads.messages.create(
+        #     thread_id=self.thread.id,
+        #     role="user",
+        #     content=message_to_send
+        # )
+        # self.run = self.client.beta.threads.runs.create(
+        #     thread_id=self.thread.id,
+        #     assistant_id=self.assistent.id
+        # )
+        # self.lock.release()
+
+    def on_messages(self, messages):
+        for message in messages:
+            print("Jess: " + message + "\nYou: ")
 
     def _send_system_message_about_action(self):
         logger.debug("Sending system message about action")
