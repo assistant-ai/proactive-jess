@@ -31,12 +31,14 @@ class Run(object):
         return self._finished
     
     def execute(self):
-        while self.run_status() not in ["completed", "failed", "canceled", "expired"]:
-            if self.run_status() == "in_progress":
+        run_status = ""
+        while run_status not in ["completed", "failed", "canceled", "expired"]:
+            run_status = self.run_status()
+            if run_status == "in_progress":
                 pass
-            elif self.run_status() == "cancelling":
+            elif run_status == "cancelling":
                 pass
-            elif self.run_status() == "requires_action":
+            elif run_status == "requires_action":
                 self._handle_actions()
             time.sleep(1)
         self.logger.debug("looks like we are done, checking if completed succesfully")

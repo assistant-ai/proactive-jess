@@ -5,6 +5,7 @@ import sys
 import json
 import time
 
+
 from openai import OpenAI
 from run import Run
 
@@ -97,7 +98,7 @@ class Jess(object):
     def on_messages(self, messages):
         for message in messages:
             if message:
-                self.message_handler.on_message(message)
+                self.message_handler(message)
 
     def _send_system_message_about_action(self):
         self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first.")
