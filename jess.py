@@ -3,8 +3,10 @@ import time
 import logging
 import sys
 import json
+import time
 
 from openai import OpenAI
+from run import Run
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,7 +30,7 @@ function_to_schedule_message = {
         "parameters": {
             "type": "object",
             "properties": {
-                "time": {
+                "sec_delay": {
                     "type": "integer", 
                     "description": "Amount of second from now when the message should be sent."
                 },
@@ -50,153 +52,63 @@ class Jess(object):
         self.thread = client.beta.threads.create(
             messages=[]
         )
-        # create lock variable for the thread
-        self.lock = threading.Lock()
         self.assistent = assistent
         self.stopped = False
         self.client = client
         self.next_action_time = None
-        self.last_status = None
+        self.next_message = None
 
     def stop(self):
         self.stopped = True
 
-    def cancel_current_run(self):
-        self.lock.acquire()
-        if not self.run:
-            self.lock.release()
-            return
-        run_status = self.client.beta.threads.runs.retrieve(
-            thread_id=self.thread.id,
-            run_id=self.run.id
-        )
-        if run_status.status != "requires_action":
-            self.lock.release()
-            return
-        self.client.beta.threads.runs.cancel(
-            thread_id=self.thread.id,
-            run_id=self.run.id
-        )
-        self.run = None
-        self.lock.release()
-        
+    def _cancel_scheduled_message(self):
+        self.next_action_time = None
+        self.next_message = None
+
     def send_message(self, message_to_send):
-        self.cancel_current_run()
-        self.lock.acquire()
+        self._cancel_scheduled_message()
+        self._send_message(message_to_send)
+        self._send_system_message_about_action()
+        
+    def _send_message(self, message_to_send):
+        while not self.run.finished():
+            time.sleep(1)
+        
         self.client.beta.threads.messages.create(
             thread_id=self.thread.id,
             role="user",
             content=message_to_send
         )
-        self.run = self.client.beta.threads.runs.create(
+        run = self.client.beta.threads.runs.create(
             thread_id=self.thread.id,
             assistant_id=self.assistent.id
         )
-        self.lock.release()
+        self.run = Run(run.id, self.thread.id, self.client, self, {
+            "schedule_message": self._schedule_message
+        })        
+
+    def _schedule_message(self, sec_delay, message):
+        self.next_action_time = time.time() + int(sec_delay)
+        self.next_message = message
+
+    def on_messages(self, messages):
+        for message in messages:
+            print("Jess: " + message + "\n")
 
     def _send_system_message_about_action(self):
-        logger.debug("Sending system message about action")
-        self.client.beta.threads.messages.create(
-            thread_id=self.thread.id,
-            role="user",
-            content="*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first."
-        )
-        self.run = self.client.beta.threads.runs.create(
-            thread_id=self.thread.id,
-            assistant_id=self.assistent.id
-        )
-
-    def _print_jess_message(self, message):
-        print("Jess: " + message + "\nYou: ")
-
-    def _check_need_to_send_proactive_message(self):
-        if not self.next_action_time:
-            return False
-        logger.debug(f"checking time next_action_time: {self.next_action_time}, current time: {time.time()}, message: {self.next_message}")
-        if time.time() >= self.next_action_time:
-            return True
-        return False
-    
-    def _is_current_run_completed(self):
-        if not self.run:
-            return False
-        run_status = self.client.beta.threads.runs.retrieve(
-            thread_id=self.thread.id,
-            run_id=self.run.id
-        )
-        logger.debug(f"run_status: {run_status.status}")
-        return run_status.status == "completed"
+        self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first.")
 
     def execute(self):
         logger.debug("Starting Jess")
         while not self.stopped:
             logger.debug("Checking run status")
-            self.lock.acquire()
-            # check if run is completed and if last status was None or required aciton
-            #    print messages
-            #    check if proactive message need to be initiated
-            # check if run is requires_action
-            #    execute action
-            self.lock.release()
-            return
-            if not self.run:
-                if self.last_status and self.last_status == "requires_action":
-                    self.last_status = None
-                    self._send_system_message_about_action()
-                self.lock.release()
-                time.sleep(1)
-                continue
-            run_status = self.client.beta.threads.runs.retrieve(
-                thread_id=self.thread.id,
-                run_id=self.run.id
-            )
-            logger.debug(f"run_status: {run_status.status}")
-            if run_status.status == "completed":
-                if self.last_status and self.last_status == "requires_action":
-                    self.last_status = None
-                else:
-                    messages = self.client.beta.threads.messages.list(
-                        thread_id=self.thread.id
-                    )
-                    self._print_jess_message(list(messages)[0].content[0].text.value)
+            if time.time() >= self.next_action_time:
+                logger.debug("now")
+                self.on_messages([self.next_message])
+                self.next_action_time = None
+                self.next_message = None
                 self._send_system_message_about_action()
-            if run_status.status == "requires_action":
-                if self.next_action_time:
-                    logger.debug(f"checking time next_action_time: {self.next_action_time}, current time: {time.time()}, message: {self.next_message}")
-                    if time.time() >= self.next_action_time:
-                        logger.debug("now")
-                        call_data = run_status.required_action.submit_tool_outputs.tool_calls[0]
-                        call_id = call_data.id
-                        arg_string = call_data.function.arguments
-                        args = json.loads(arg_string)
-                        arugment_message = args["message"]
-                        self.client.beta.threads.runs.submit_tool_outputs(
-                            thread_id=self.thread.id,
-                            run_id=self.run.id,
-                            tool_outputs=[
-                                {
-                                    "tool_call_id": call_id,
-                                    "output": "done"
-                                }
-                            ]
-                        )
-                        self.next_action_time = None
-                        self._print_jess_message(arugment_message)
-                        self.last_status = "requires_action"
-                    else:
-                        logger.debug("not yet")
-                else:
-                    call_data = run_status.required_action.submit_tool_outputs.tool_calls[0]
-                    arg_string = call_data.function.arguments
-                    args = json.loads(arg_string)
-                    arugment_time = args["time"]
-                    arugment_message = args["message"]
-                    # arugment_time is in seconds from now
-                    self.next_action_time = time.time() + int(arugment_time)
-                    self.next_message = arugment_message
-                    logger.debug(f"next_action_time: {self.next_action_time}, text: {arugment_message}, current time: {time.time()}")
-            self.lock.release()
-            time.sleep(1)
+                time.sleep(2)
 
     @staticmethod
     def start():
@@ -238,8 +150,3 @@ if __name__ == "__main__":
         message_to_send = input("You: ")
         jess.send_message(message_to_send)
         time.sleep(3)
-    # jess.send_message("Hello")
-    # time.sleep(10)
-    # jess.stop()
-    # time.sleep(2)
-    # print("done")
