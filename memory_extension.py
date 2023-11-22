@@ -3,6 +3,8 @@ from openai import OpenAI
 client = OpenAI()
 import pinecone
 import os
+import json
+import uuid
 from dotenv import load_dotenv
 from jess_extension import jess_extension
 
@@ -24,9 +26,11 @@ class Memory(object):
         self.index = index
     
     def _embed_text_with_openai(self, text):
-        response = client.embeddings.create(input=text,
-        model="text-embedding-ada-002")
-        return response['data'][0]['embedding']
+        response = client.embeddings.create(
+            input=[text],
+            model="text-embedding-ada-002"
+        )
+        return response.data[0].embedding
 
     @jess_extension(
         description="Store a new memory/fact about a user so you can retrive it later",
@@ -39,10 +43,10 @@ class Memory(object):
         fact_id = str(uuid.uuid4())
 
         # Generate the fact vector
-        fact_vector = self.embed_text_with_openai(fact)
+        fact_vector = self._embed_text_with_openai(fact)
 
         # Store the fact with user ID in the metadata
-        index.upsert(vectors=[{
+        self.index.upsert(vectors=[{
             "id": fact_id, 
             "values": fact_vector, 
             "metadata": {
@@ -50,6 +54,7 @@ class Memory(object):
                 "fact": fact
             }
         }])
+        return "DONE"
 
     @jess_extension(
         description="Retrive relevant memory/facts about user by askin a questiont",
@@ -70,7 +75,7 @@ class Memory(object):
         }
 
         # Perform the query
-        return self.extract_sorted_facts(index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True))
+        return json.dumps(self._extract_sorted_facts(self.index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True)))
 
 
     def _extract_sorted_facts(self, results_dict):
