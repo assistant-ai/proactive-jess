@@ -6,6 +6,7 @@ import json
 import time
 
 
+from memory_extension import Memory
 from openai import OpenAI
 from run import Run
 from jess_extension import jess_extension, get_openai_spec
@@ -22,6 +23,13 @@ def read_jeff_instructions():
 
 
 instructions = read_jeff_instructions()
+
+memory = Memory.create_memory_extension()
+
+extensions = {
+    "store_in_long_term_memory": memory.store_in_long_term_memory,
+    "query_from_long_term_memory": memory.query_from_long_term_memory
+}
 
 
 class Jess(object):
@@ -63,9 +71,7 @@ class Jess(object):
             thread_id=self.thread.id,
             assistant_id=self.assistent.id
         )
-        self.run = Run(run.id, self.thread.id, self.client, self, {
-            "schedule_message": self.schedule_message
-        }, logger)  
+        self.run = Run(run.id, self.thread.id, self.client, self, extensions, logger)  
         self.run.execute()      
 
     @jess_extension(
@@ -104,11 +110,13 @@ class Jess(object):
     def start(message_handler):
         JESS_NAME = "Jess"
         client = OpenAI()
-        print(str(get_openai_spec(Jess.schedule_message)))
+        tools = [get_openai_spec(Jess.schedule_message)]
+        for extension_name in extensions.keys():
+            tools.append(get_openai_spec(extensions[extension_name]))
         jess_assitent_args = {
             "name": JESS_NAME,
             "instructions": instructions,
-            "tools": [get_openai_spec(Jess.schedule_message)],
+            "tools": tools,
             "model": "gpt-4-1106-preview"
         }
         jess_assitent = None
@@ -130,6 +138,7 @@ class Jess(object):
                 **jess_assitent_args
             )
         jess = Jess(client, jess_assitent, message_handler)
+        extensions["schedule_message"] = jess.schedule_message
         thread = threading.Thread(target=jess.execute)
         thread.start()
         return jess

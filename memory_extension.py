@@ -1,12 +1,16 @@
 import openai
 import pinecone
+import os
 from dotenv import load_dotenv
 from jess_extension import jess_extension
 
+
 load_dotenv()
+
 
 PINECONE_KEY = os.getenv('PINECONE_KEY')
 USER_ID = os.getenv('USER_ID')
+
 
 pinecone.init(api_key=PINECONE_KEY, environment='gcp-starter')
 
@@ -30,7 +34,7 @@ class Memory(object):
             "fact": "A memory or a fact to store about the user"
         }
     )
-    def store_fact(self, fact: str):
+    def store_in_long_term_memory(self, fact: str):
         # Generate a unique identifier for the fact (e.g., UUID)
         fact_id = str(uuid.uuid4())
 
@@ -54,7 +58,7 @@ class Memory(object):
             "count": "Amount of facts/memories to return (sorted by relevance), default is 5"
         }
     )
-    def query_user_facts(self, question: str, count: int):
+    def query_from_long_term_memory(self, question: str, count: int):
         if count <= 0:
             count = 5
         # Assuming 'query_vector' is the vector representation of your query
@@ -68,6 +72,7 @@ class Memory(object):
         # Perform the query
         return self.extract_sorted_facts(index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True))
 
+
     def _extract_sorted_facts(self, results_dict):
         # Extracting the facts and their scores
         facts_with_scores = [(match['metadata']['fact'], match['score']) for match in results_dict['matches']]
@@ -77,8 +82,8 @@ class Memory(object):
 
         # Extracting only the facts from the sorted tuples
         sorted_fact_strings = [fact for fact, score in sorted_facts]
-
         return sorted_fact_strings
+
 
     @staticmethod
     def create_memory_extension():
@@ -87,3 +92,4 @@ class Memory(object):
             pinecone.create_index(index_name, dimension=1536)  # Adjust dimension based on the model
         index = pinecone.Index(index_name)
         return Memory(USER_ID, index)
+    
