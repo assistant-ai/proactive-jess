@@ -62,8 +62,14 @@ class Run(object):
             thread_id=self.thread_id,
             run_id=self.run_id
         )
+        call_outputs = []
         for call_data in run_data.required_action.submit_tool_outputs.tool_calls:
-            self._handle_action(call_data)        
+            call_outputs.append(self._handle_action(call_data))
+        self.client.beta.threads.runs.submit_tool_outputs(
+            thread_id=self.thread_id,
+            run_id=self.run_id,
+            tool_outputs=call_outputs
+        )     
     
     def _handle_action(self, action):
         call_id = action.id
@@ -71,13 +77,7 @@ class Run(object):
         arg_string = action.function.arguments
         args = json.loads(arg_string)
         output = self.actions[funciton_name](**args)
-        self.client.beta.threads.runs.submit_tool_outputs(
-            thread_id=self.thread_id,
-            run_id=self.run_id,
-            tool_outputs=[
-                {
-                    "tool_call_id": call_id,
-                    "output": output
-                }
-            ]
-        )
+        return {
+            "tool_call_id": call_id,
+            "output": output
+        }

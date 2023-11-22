@@ -10,7 +10,8 @@ from memory_extension import Memory
 from openai import OpenAI
 from run import Run
 from jess_extension import jess_extension, get_openai_spec
-from google_calendar_extension import get_upcoming_calendar_events
+from google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
+from simple_utils_extension import current_date_time
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -30,7 +31,9 @@ memory = Memory.create_memory_extension()
 extensions = {
     "store_in_long_term_memory": memory.store_in_long_term_memory,
     "query_from_long_term_memory": memory.query_from_long_term_memory,
-    "get_upcoming_calendar_events": get_upcoming_calendar_events
+    "get_upcoming_calendar_events": get_upcoming_calendar_events,
+    "create_google_calendar_event": create_google_calendar_event,
+    "current_date_time": current_date_time
 }
 
 

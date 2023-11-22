@@ -1,6 +1,8 @@
 import inspect
 import json
 
+from typing import List
+
 
 def jess_extension(description: str, param_descriptions: dict):
     def decorator(func):
@@ -13,7 +15,16 @@ def jess_extension(description: str, param_descriptions: dict):
             if param == "self":
                 continue
             required_params.append(param)
-            param_type = "string" if annot.annotation == str else "integer"
+            param_type = "integer" 
+            if annot.annotation == str:
+                param_type = "string"
+            elif annot.annotation == List:
+                param_type = {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             param_desc = param_descriptions.get(param, '')
             param_info[param] = {"type": param_type, "description": param_desc}
 
