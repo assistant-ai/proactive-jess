@@ -5,7 +5,6 @@ from jess import Jess
 import os
 import asyncio
 import requests
-import requests
 
 load_dotenv()
 
@@ -23,7 +22,7 @@ async def get_chat_id(update, context):
     await update.message.reply_text(f"Your chat ID is: {chat_id}")
 
 def message_handler(meesage_to_send):
-    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={meesage_to_send}"
+    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={meesage_to_send}"
     return requests.get(url).json()
 
 
