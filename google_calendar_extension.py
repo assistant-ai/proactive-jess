@@ -10,33 +10,42 @@ from googleapiclient.errors import HttpError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 creds = Credentials.from_authorized_user_file("creds.json", SCOPES)
+service = build("calendar", "v3", credentials=creds)
 
-try:
-    service = build("calendar", "v3", credentials=creds)
+from jess_extension import jess_extension
 
-    # Call the Calendar API
-    now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
-    print("Getting the upcoming 10 events")
-    events_result = (
-        service.events()
-        .list(
-            calendarId="primary",
-            timeMin=now,
-            maxResults=10,
-            singleEvents=True,
-            orderBy="startTime",
+@jess_extension(
+    description="Get upcoming events from user's Google Calenda",
+    param_descriptions={
+        "count": "Numbe of upcoming events to get"
+    }
+)
+def get_upcoming_calendar_events(count: int):
+    try:
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + "Z"  
+        events_result = (
+            service.events()
+            .list(
+                calendarId="primary",
+                timeMin=now,
+                maxResults=count,
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
         )
-        .execute()
-    )
-    events = events_result.get("items", [])
+        events = events_result.get("items", [])
 
-    if not events:
-        print("No upcoming events found.")
-    else:
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event["start"].get("dateTime", event["start"].get("date"))
-            print(start, event["summary"])
+        if not events:
+            return "No upcoming events found."
+        else:
+            result = ""
+            # Prints the start and name of the next 10 events
+            for event in events:
+                start = event["start"].get("dateTime", event["start"].get("date"))
+                result = result + start + ": " + event["summary"] + "\n"
+            return result
 
-except HttpError as error:
-    print(f"An error occurred: {error}")
+    except HttpError as error:
+        return f"An error occurred: {error}"

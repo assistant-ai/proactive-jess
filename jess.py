@@ -10,6 +10,7 @@ from memory_extension import Memory
 from openai import OpenAI
 from run import Run
 from jess_extension import jess_extension, get_openai_spec
+from google_calendar_extension import get_upcoming_calendar_events
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,7 +29,8 @@ memory = Memory.create_memory_extension()
 
 extensions = {
     "store_in_long_term_memory": memory.store_in_long_term_memory,
-    "query_from_long_term_memory": memory.query_from_long_term_memory
+    "query_from_long_term_memory": memory.query_from_long_term_memory,
+    "get_upcoming_calendar_events": get_upcoming_calendar_events
 }
 
 
@@ -92,7 +94,7 @@ class Jess(object):
                 self.message_handler(message)
 
     def _send_system_message_about_action(self):
-        self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first.")
+        self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first. Do NOT reply to this message anything.")
 
     def execute(self):
         logger.debug("Starting Jess")
