@@ -1,4 +1,6 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import pinecone
 import os
 from dotenv import load_dotenv
@@ -22,10 +24,8 @@ class Memory(object):
         self.index = index
     
     def _embed_text_with_openai(self, text):
-        response = openai.Embedding.create(
-            input=text,
-            model="text-embedding-ada-002"  
-        )
+        response = client.embeddings.create(input=text,
+        model="text-embedding-ada-002")
         return response['data'][0]['embedding']
 
     @jess_extension(
