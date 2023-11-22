@@ -4,8 +4,13 @@ from dotenv import load_dotenv
 from jess import Jess
 import os
 import asyncio
+import requests
+import requests
 
 load_dotenv()
+
+chat_id = os.getenv('TELEGRAM_CHAT_ID')
+telegram_token = os.getenv('TELEGRAM_TOKEN')
 
 async def start(update, context):
     await update.message.reply_text('Hello! I am your bot.')
@@ -17,33 +22,17 @@ async def get_chat_id(update, context):
     chat_id = update.message.chat_id
     await update.message.reply_text(f"Your chat ID is: {chat_id}")
 
-def message_handler(meesage):
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    bot = Bot(token=os.getenv('TELEGRAM_TOKEN'))
-    # Define the coroutine
-    coroutine = bot.send_message(chat_id=chat_id, text=message)
+def message_handler(meesage_to_send):
+    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={meesage_to_send}"
+    return requests.get(url).json()
 
-    # Get the current event loop
-    loop = asyncio.get_event_loop()
 
-    # Schedule the coroutine to be run on the event loop
-    future = asyncio.run_coroutine_threadsafe(coroutine, loop)
-
-    # Optionally, wait for the future to complete (if you need to know the result or catch exceptions)
-    result = future.result()
-    # asyncio.get_event_loop().run_until_complete(bot.send_message(chat_id=chat_id, text=meesage))
-    # await bot.send_message(chat_id=chat_id, text=meesage)
-
+bot = Bot(token=telegram_token)
 jess = Jess.start(message_handler)
-# # while loop with the read from keyboard and send message
-# while True:
-#     message_to_send = input("You: ")
-#     jess.send_message(message_to_send)
-#     time.sleep(3)
 
 def main():
-    token = os.getenv('TELEGRAM_TOKEN') 
-    application = Application.builder().token(token).build()
+    print("starting")
+    application = Application.builder().bot(bot).build()
     start_handler = CommandHandler('start', start)
     start_handler = CommandHandler('get_chat_id', get_chat_id)
     application.add_handler(start_handler)
