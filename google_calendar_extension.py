@@ -3,6 +3,7 @@ import os.path
 import json
 import datetime
 import pytz
+import dateparser
 
 from typing import List
 
@@ -20,44 +21,35 @@ service = build("calendar", "v3", credentials=creds)
 from jess_extension import jess_extension
 
 
-def _convert_timestamp_to_datetime(timestamp, timezone_str='America/Los_Angeles'):
-    # Convert the integer timestamp to a datetime object
-    dt = datetime.datetime.fromtimestamp(timestamp, tz=pytz.utc)
-
-    # Convert the datetime object to the desired timezone
-    desired_timezone = pytz.timezone(timezone_str)
-    localized_dt = dt.astimezone(desired_timezone)
-
-    # Format the datetime object as a string
-    formatted_datetime = localized_dt.strftime('%Y-%m-%dT%H:%M:%S%z')
-
-    return {
-        'dateTime': formatted_datetime,
-        'timeZone': timezone_str
-    }
-
-
 @jess_extension(
     description="Create Google Calendar event, parameters will be passed as is to Google calendar API. When scheduling add user mail as well to the list of attendees",
     param_descriptions={
         "summary": "summary of the event",
         "location": "can be empty, location of the event",
         "description": "desription of the event",
-        "start_timestamp": "timestamp, int, of the start of the event",
-        "end_timestamp": "timestamp, int, of the end of the event",
+        "start_timestamp": "date and time, free form, of the start of the event",
+        "end_timestamp": "date and time, free form, of the end of the event",
         "attendee_mails": "list of mails of attendees",
     }
 )
-def create_google_calendar_event(summary: str, location: str, description: str, start_timestamp: int, end_timestamp: int, attendee_mails: List[str]):
+def create_google_calendar_event(summary: str, location: str, description: str, start_timestamp: str, end_timestamp: str, attendee_mails: List[str]):
     attendees = [{
         'email': mail
     } for mail in attendee_mails]
+    start_date = dateparser.parse(start_timestamp)
+    end_date = dateparser.parse(end_timestamp)
     event = {
         'summary': summary,
         'location': location,
         'description': description,
-        'start': _convert_timestamp_to_datetime(start_timestamp),
-        'end': _convert_timestamp_to_datetime(end_timestamp),
+        'start': {
+            'dateTime': start_date.isoformat(),
+            'timeZone': 'America/Los_Angeles'
+        },
+        'end': {
+            'dateTime': end_date.isoformat(),
+            'timeZone': 'America/Los_Angeles'
+        },
         'attendees': attendees
     }
     event = service.events().insert(calendarId='primary', body=event).execute()

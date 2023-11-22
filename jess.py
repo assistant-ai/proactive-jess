@@ -39,11 +39,9 @@ extensions = {
 
 class Jess(object):
 
-    def __init__(self, client, assistent, message_handler) -> None:
+    def __init__(self, client, assistent, message_handler, jess_chat_thread) -> None:
         self.run = None
-        self.thread = client.beta.threads.create(
-            messages=[]
-        )
+        self.thread = jess_chat_thread
         self.assistent = assistent
         self.stopped = False
         self.client = client
@@ -111,6 +109,12 @@ class Jess(object):
                 self._send_system_message_about_action()
             time.sleep(2)
 
+    def drop_chat_thread(self):
+        self._cancel_scheduled_message()
+        self.thread = client.beta.threads.create(
+            messages=[]
+        )        
+
     @staticmethod
     def start(message_handler):
         JESS_NAME = "Jess"
@@ -131,6 +135,10 @@ class Jess(object):
                 logger.debug("Found assistant")
                 break
 
+        jess_chat_thread = client.beta.threads.create(
+            messages=[]
+        )
+
         if not jess_assitent:
             logger.debug("Creating new assistant")
             jess_assitent = client.beta.assistants.create(
@@ -142,7 +150,7 @@ class Jess(object):
                 assistant_id=jess_assitent.id,
                 **jess_assitent_args
             )
-        jess = Jess(client, jess_assitent, message_handler)
+        jess = Jess(client, jess_assitent, message_handler, jess_chat_thread)
         extensions["schedule_message"] = jess.schedule_message
         thread = threading.Thread(target=jess.execute)
         thread.start()
