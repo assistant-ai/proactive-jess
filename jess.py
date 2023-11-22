@@ -8,6 +8,7 @@ import time
 
 from openai import OpenAI
 from run import Run
+from jess_extension import jess_extension, get_openai_spec
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -21,29 +22,6 @@ def read_jeff_instructions():
 
 
 instructions = read_jeff_instructions()
-
-
-function_to_schedule_message = {
-    "type": "function",
-    "function": {
-        "name": "schedule_message",
-        "description": "Schedule next message to be sent to a user if there is not response from user after a defined period of time.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "sec_delay": {
-                    "type": "integer", 
-                    "description": "Amount of second from now when the message should be sent."
-                },
-                "message": {
-                    "type": "string", 
-                    "description": "Message to be sent to the user."
-                },
-            },
-            "required": ["message", "time"]
-        }
-    }
-} 
 
 
 class Jess(object):
@@ -86,11 +64,18 @@ class Jess(object):
             assistant_id=self.assistent.id
         )
         self.run = Run(run.id, self.thread.id, self.client, self, {
-            "schedule_message": self._schedule_message
+            "schedule_message": self.schedule_message
         }, logger)  
         self.run.execute()      
 
-    def _schedule_message(self, sec_delay, message):
+    @jess_extension(
+        description="Schedule next message to be sent to a user if there is no response from the user after a defined period of time.",
+        param_descriptions={
+            "sec_delay": "Amount of seconds from now when the message should be sent.",
+            "message": "Message to be sent to the user."
+        }
+    )
+    def schedule_message(self, sec_delay: int, message: str):
         self.next_action_time = time.time() + int(sec_delay)
         self.next_message = message
         return "DONE"
@@ -119,10 +104,11 @@ class Jess(object):
     def start(message_handler):
         JESS_NAME = "Jess"
         client = OpenAI()
+        print(str(get_openai_spec(Jess.schedule_message)))
         jess_assitent_args = {
             "name": JESS_NAME,
             "instructions": instructions,
-            "tools": [function_to_schedule_message],
+            "tools": [get_openai_spec(Jess.schedule_message)],
             "model": "gpt-4-1106-preview"
         }
         jess_assitent = None
