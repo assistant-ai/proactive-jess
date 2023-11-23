@@ -2,7 +2,7 @@ import os
 import time
 
 from dotenv import load_dotenv
-from jess_extension import jess_extension
+from .jess_extension import jess_extension
 from google.cloud import pubsub_v1
 from concurrent.futures import TimeoutError
 

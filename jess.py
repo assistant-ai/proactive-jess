@@ -2,17 +2,12 @@ import threading
 import time
 import logging
 import sys
-import json
 import time
 
-
-from memory_extension import Memory
+from extensions import get_extensions
 from openai import OpenAI
 from run import Run
-from jess_extension import jess_extension, get_openai_spec
-from google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
-from simple_utils_extension import current_date_time
-from local_bash_extension import send_bash_command_to_local_host
+from extensions.jess_extension import jess_extension, get_openai_spec
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,21 +22,11 @@ def read_jeff_instructions():
 
 instructions = read_jeff_instructions()
 
-memory = Memory.create_memory_extension()
-
-extensions = {
-    "store_in_long_term_memory": memory.store_in_long_term_memory,
-    "query_from_long_term_memory": memory.query_from_long_term_memory,
-    "get_upcoming_calendar_events": get_upcoming_calendar_events,
-    "create_google_calendar_event": create_google_calendar_event,
-    "current_date_time": current_date_time,
-    "send_bash_command_to_local_host": send_bash_command_to_local_host
-}
 
 
 class Jess(object):
 
-    def __init__(self, client, assistent, message_handler, jess_chat_thread) -> None:
+    def __init__(self, client, assistent, message_handler, jess_chat_thread, extensions) -> None:
         self.run = None
         self.thread = jess_chat_thread
         self.assistent = assistent
@@ -50,6 +35,7 @@ class Jess(object):
         self.next_action_time = None
         self.next_message = None
         self.message_handler = message_handler
+        self.extensions = extensions
 
     def stop(self):
         self.stopped = True
@@ -76,7 +62,7 @@ class Jess(object):
             thread_id=self.thread.id,
             assistant_id=self.assistent.id
         )
-        self.run = Run(run.id, self.thread.id, self.client, self, extensions, logger)  
+        self.run = Run(run.id, self.thread.id, self.client, self, self.extensions, logger)  
         self.run.execute()      
 
     @jess_extension(
@@ -118,7 +104,7 @@ class Jess(object):
         )        
 
     @staticmethod
-    def start(message_handler):
+    def start(message_handler, extensions):
         JESS_NAME = "Jess"
         client = OpenAI()
         tools = [get_openai_spec(Jess.schedule_message)]
@@ -152,7 +138,7 @@ class Jess(object):
                 assistant_id=jess_assitent.id,
                 **jess_assitent_args
             )
-        jess = Jess(client, jess_assitent, message_handler, jess_chat_thread)
+        jess = Jess(client, jess_assitent, message_handler, jess_chat_thread, extensions)
         extensions["schedule_message"] = jess.schedule_message
         thread = threading.Thread(target=jess.execute)
         thread.start()
@@ -162,7 +148,8 @@ def message_handler(message):
     print("jess: " + message + "\n")
 
 if __name__ == "__main__":
-    jess = Jess.start(message_handler)
+    extensions = get_extensions()
+    jess = Jess.start(message_handler, extensions)
     # while loop with the read from keyboard and send message
     while True:
         message_to_send = input("You: ")

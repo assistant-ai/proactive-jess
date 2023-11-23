@@ -1,12 +1,10 @@
 from openai import OpenAI
-
-client = OpenAI()
 import pinecone
 import os
 import json
 import uuid
 from dotenv import load_dotenv
-from jess_extension import jess_extension
+from .jess_extension import jess_extension
 
 
 load_dotenv()
@@ -14,6 +12,8 @@ load_dotenv()
 
 PINECONE_KEY = os.getenv('PINECONE_KEY')
 USER_ID = os.getenv('USER_ID')
+
+client = OpenAI()
 
 
 pinecone.init(api_key=PINECONE_KEY, environment='gcp-starter')

@@ -2,8 +2,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from telegram import Bot
 from dotenv import load_dotenv
 from jess import Jess
+from extensions import get_extensions
 import os
-import asyncio
 import requests
 
 load_dotenv()
@@ -33,7 +33,7 @@ def message_handler(meesage_to_send):
 
 
 bot = Bot(token=telegram_token)
-jess = Jess.start(message_handler)
+jess = Jess.start(message_handler, get_extensions())
 
 def main():
     print("starting")

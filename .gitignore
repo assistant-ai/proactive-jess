@@ -1,4 +1,4 @@
-.env
+.env*
 creds.json
 jess_local_connector/start.sh
 

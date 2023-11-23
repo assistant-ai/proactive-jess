@@ -1,15 +1,10 @@
 import datetime
-import os.path
-import json
 import datetime
-import pytz
 import dateparser
 
 from typing import List
 
-from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -21,7 +16,7 @@ try:
 except Exception as e:
     pass
 
-from jess_extension import jess_extension
+from extensions.jess_extension import jess_extension
 
 
 @jess_extension(

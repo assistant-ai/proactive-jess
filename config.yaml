@@ -1,0 +1,5 @@
+extensions:
+  long_term_memory: true
+  google_calendar: true
+  current_date_time: true
+  local_bash: false

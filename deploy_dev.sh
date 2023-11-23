@@ -1,8 +1,11 @@
 #!/bin/bash
 
+rm .env
+ln -s .env.dev .env 
+
 # Define variables
-CONTAINER_NAME="jess_telegram_bot"
-IMAGE_NAME="jess_telegram_bot_image"
+CONTAINER_NAME="jess_telegram_bot_dev"
+IMAGE_NAME="jess_telegram_bot_image_dev"
 
 # Step 1: Stop and Remove the existing container (if it exists)
 echo "Stopping existing container..."

@@ -1,6 +1,6 @@
 import datetime
 
-from jess_extension import jess_extension
+from .jess_extension import jess_extension
 
 
 @jess_extension(
