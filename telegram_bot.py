@@ -15,6 +15,8 @@ async def start(update, context):
     await update.message.reply_text('Hello! I am your bot.')
 
 async def message(update, context):
+    if str(update.message.chat_id) != str(chat_id):
+        return
     jess.send_message(update.message.text)
 
 async def get_chat_id(update, context):

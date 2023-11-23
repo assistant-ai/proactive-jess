@@ -12,6 +12,7 @@ from run import Run
 from jess_extension import jess_extension, get_openai_spec
 from google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
 from simple_utils_extension import current_date_time
+from local_bash_extension import send_bash_command_to_local_host
 
 
 logging.basicConfig(level=logging.ERROR, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -33,7 +34,8 @@ extensions = {
     "query_from_long_term_memory": memory.query_from_long_term_memory,
     "get_upcoming_calendar_events": get_upcoming_calendar_events,
     "create_google_calendar_event": create_google_calendar_event,
-    "current_date_time": current_date_time
+    "current_date_time": current_date_time,
+    "send_bash_command_to_local_host": send_bash_command_to_local_host
 }
 
 
