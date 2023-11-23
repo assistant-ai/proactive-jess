@@ -27,10 +27,11 @@ from extensions.jess_extension import jess_extension
         "description": "desription of the event",
         "start_timestamp": "date and time, free form, of the start of the event",
         "end_timestamp": "date and time, free form, of the end of the event",
-        "attendee_mails": "list of mails of attendees",
+        "attendee_mails": "list of mails of attendees, in a string, comma separated",
     }
 )
-def create_google_calendar_event(summary: str, location: str, description: str, start_timestamp: str, end_timestamp: str, attendee_mails: List[str]):
+def create_google_calendar_event(summary: str, location: str, description: str, start_timestamp: str, end_timestamp: str, attendee_mails: str):
+    attendee_mails = attendee_mails.split(",")
     attendees = [{
         'email': mail
     } for mail in attendee_mails]

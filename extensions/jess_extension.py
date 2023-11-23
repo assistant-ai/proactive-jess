@@ -1,7 +1,5 @@
 import inspect
 
-from typing import List, get_origin
-
 
 def jess_extension(description: str, param_descriptions: dict):
     def decorator(func):
@@ -17,13 +15,6 @@ def jess_extension(description: str, param_descriptions: dict):
             param_type = "integer" 
             if annot.annotation == str:
                 param_type = "string"
-            elif get_origin(annot.annotation) == list:
-                param_type = {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
             param_desc = param_descriptions.get(param, '')
             param_info[param] = {"type": param_type, "description": param_desc}
 

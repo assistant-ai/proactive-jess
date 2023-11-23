@@ -29,15 +29,15 @@ def subscribe_to_result(project_id, subscription_id, timeout=None):
     global initiated
     if not initiated:
         initiated = True
-        subscriber = pubsub_v1.SubscriberClient()
-        subscription_path = subscriber.subscription_path(project_id, subscription_id)
-        def callback(message):
-            print(f"Received result: {message.data.decode('utf-8')}")
-            result["text"] = message.data.decode('utf-8')
-            message.ack()
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(project_id, subscription_id)
+    def callback(message):
+        print(f"Received result: {message.data.decode('utf-8')}")
+        result["text"] = message.data.decode('utf-8')
+        message.ack()
 
-        subscriber.subscribe(subscription_path, callback=callback)
-        print(f"Listening for results on {subscription_path}...")
+    subscriber.subscribe(subscription_path, callback=callback)
+    print(f"Listening for results on {subscription_path}...")
     while result["text"] == "":
         time.sleep(1)
     to_return = result["text"]
