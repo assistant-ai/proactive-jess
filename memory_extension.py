@@ -93,8 +93,12 @@ class Memory(object):
     @staticmethod
     def create_memory_extension():
         index_name = 'user-facts-index'
-        if index_name not in pinecone.list_indexes():
-            pinecone.create_index(index_name, dimension=1536)  # Adjust dimension based on the model
-        index = pinecone.Index(index_name)
+        index = None
+        try:
+            if index_name not in pinecone.list_indexes():
+                pinecone.create_index(index_name, dimension=1536)  # Adjust dimension based on the model
+            index = pinecone.Index(index_name)
+        except:
+            pass
         return Memory(USER_ID, index)
     

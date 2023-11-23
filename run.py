@@ -76,7 +76,11 @@ class Run(object):
         funciton_name = action.function.name
         arg_string = action.function.arguments
         args = json.loads(arg_string)
-        output = self.actions[funciton_name](**args)
+        output = ""
+        try:
+            output = self.actions[funciton_name](**args)
+        except Exception as e:
+            output = f"call to {funciton_name} failed with {str(e)}" 
         return {
             "tool_call_id": call_id,
             "output": output

@@ -15,8 +15,11 @@ from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-creds = Credentials.from_authorized_user_file("creds.json", SCOPES)
-service = build("calendar", "v3", credentials=creds)
+try:
+    creds = Credentials.from_authorized_user_file("creds.json", SCOPES)
+    service = build("calendar", "v3", credentials=creds)
+except Exception as e:
+    pass
 
 from jess_extension import jess_extension
 
