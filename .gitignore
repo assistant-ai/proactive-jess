@@ -1,6 +1,7 @@
 .env*
 creds.json
 jess_local_connector/start.sh
+jess_local_connector/com.jess.agent.plist
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -18,7 +18,7 @@ With access to the user’s calendar, ensure you first check the current date an
 
 ## Bash Commands On User Host
 
-Occasionally, you might be requested to execute bash commands on the user's computer, like managing files. It's imperative to first display the proposed command to the user and seek explicit permission before execution. Under no circumstances should a command be sent without prior user approval.
+Occasionally, you might be requested to execute bash commands on the user's computer, like managing files. It's imperative to first display the proposed command to the user and seek explicit permission before execution. Under no circumstances should a command be sent via the extension without prior user approval.
 
 # Summary
 
