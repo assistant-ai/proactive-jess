@@ -8,9 +8,7 @@ CONTAINER_NAME="jess_telegram_bot_dev"
 IMAGE_NAME="jess_telegram_bot_image_dev"
 
 # Step 1: Stop and Remove the existing container (if it exists)
-echo "Stopping existing container..."
-docker stop "${CONTAINER_NAME}"
-docker rm "${CONTAINER_NAME}"
+. ./stop_dev.sh
 
 # Step 2: Build the new image
 echo "Building new Docker image..."
