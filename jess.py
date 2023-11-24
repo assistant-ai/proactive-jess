@@ -85,7 +85,7 @@ class Jess(object):
         self._send_message("*SYSTEM* This is not real user message, and user will not read it. This message allows you to make schedule a pro-active message to a user, if user will not respond to you any time soon by using schedule_message action. Message that you might schedule will be canceled if the user will answer to you first. Do NOT reply to this message anything.")
 
     def get_scheduled_time(self):
-        readable_time = datetime.fromtimestamp(self.next_action_time)
+        readable_time = datetime.datetime.fromtimestamp(self.next_action_time)
 
         # Format the datetime object into a readable string
         # For example, "2023-11-24 15:30:00"
