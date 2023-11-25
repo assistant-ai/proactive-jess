@@ -22,7 +22,7 @@ async def start(update, context):
 async def message(update, context):
     if str(update.message.chat_id) != str(chat_id):
         return
-    jess.send_message("Hi")
+    jess.send_message(update.message.text)
 
 
 async def get_chat_id(update, context):
