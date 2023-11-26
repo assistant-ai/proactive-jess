@@ -1,5 +1,6 @@
 import datetime
 import json
+import urllib
 
 from newspaper import Article
 from newspaper.article import ArticleDownloadState

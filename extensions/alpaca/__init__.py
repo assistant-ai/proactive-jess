@@ -7,7 +7,7 @@ load_dotenv()
 
 api =  None
 
-def get_api(test_api=True):
+def get_api(test_api=False):
     global api
     if api:
         return api
