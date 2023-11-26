@@ -4,6 +4,7 @@ import logging
 import sys
 import datetime
 
+from rutines import RutineScheduler
 from extensions import get_extensions
 from openai import OpenAI
 from run import Run
@@ -108,7 +109,7 @@ class Jess(object):
 
     def drop_chat_thread(self):
         self._cancel_scheduled_message()
-        self.thread = client.beta.threads.create(
+        self.thread = self.client.beta.threads.create(
             messages=[]
         )        
 
@@ -148,13 +149,16 @@ class Jess(object):
                 **jess_assitent_args
             )
         jess = Jess(client, jess_assitent, message_handler, jess_chat_thread, extensions)
+        RutineScheduler.start_rutines(jess)
         extensions["schedule_message"] = jess.schedule_message
         thread = threading.Thread(target=jess.execute)
         thread.start()
         return jess
 
+
 def message_handler(message):
     print("jess: " + message + "\n")
+
 
 if __name__ == "__main__":
     extensions = get_extensions()

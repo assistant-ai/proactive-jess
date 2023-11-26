@@ -45,8 +45,9 @@ async def drop_chat(update, context):
 
 
 def message_handler(message_to_send):
+    print(message_to_send)
     encoded_message = quote(message_to_send)
-    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={encoded_message}"
+    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={encoded_message}&parse_mode='MarkdownV2'"
     return requests.get(url).json()
 
 
