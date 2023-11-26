@@ -29,7 +29,7 @@ async def start(update, context):
 
 
 async def message(update, context):
-    if str(update.message.chat_id) != str(chat_id):
+    if update and update.message and str(update.message.chat_id) != str(chat_id):
         return
     jess.send_message(update.message.text)
 

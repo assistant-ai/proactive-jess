@@ -16,11 +16,19 @@ urls = {}
     }
 )
 def google(query: str):
-    result = [url for url in search(query, num_results=10)]
-    final_result = [{
-        "title": _get_article(url).title,
-        "url": url
-    } for url in result]
+    result = [url for url in search(query, num_results=15)]
+    final_result = []
+    for url in result:
+        try:
+            article = _get_article(url)
+            if article.text == "":
+                continue
+            final_result.append({
+                "title": article.title,
+                "url": url
+            })
+        except Exception as e:
+            continue
     print(str(final_result))
     return json.dumps(final_result)
 
