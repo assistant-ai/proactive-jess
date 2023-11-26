@@ -119,15 +119,39 @@ def is_market_open_now():
     except Exception as e:
         return f"An error occurred: {e}"
     
-
-def get_market_calendar():
+@jess_extension(
+    description="Return list of open orders on Alpaca platform",
+    param_descriptions={}
+)
+def get_orders():
     try:
         api = get_api()
-        calendar = api.get_calendar(start='2021-01-01', end='2021-12-31')
-        return calendar
+        portfolio = api.list_orders(status="open")
+
+        result = ""
+        # Print the quantity of shares for each position.
+        for position in portfolio:
+            print(position)
+            result = result + "{} shares of {}, order id is: {}\n".format(position.qty, position.symbol, position.id)
+        return result
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+
+@jess_extension(
+    description="Cancel an open order on Alpaca platform",
+    param_descriptions={
+        "order_id": "Order id of the order to cancel"
+    }
+)
+def cancel_order(order_id: str):
+    try:
+        api = get_api()
+        api.cancel_order(order_id)
+        return f"Order {order_id} cancelled"
     except Exception as e:
         return f"An error occurred: {e}"
 
 
 if __name__ == "__main__":
-    print(get_market_calendar())
+    print(get_orders())

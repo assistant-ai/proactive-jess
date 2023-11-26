@@ -3,7 +3,7 @@ from .memory_extension import Memory
 from .google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
 from .simple_utils_extension import current_date_time, google, get_text_from_url
 from .local_bash_extension import send_bash_command_to_local_host
-from .alpaca.shares import get_ticker_prices, sell_shares, buy_shares, get_open_positions, get_buying_power, is_market_open_now
+from .alpaca.shares import cancel_order, get_ticker_prices, sell_shares, buy_shares, get_open_positions, get_buying_power, is_market_open_now, get_orders
 from .fmp.client import FMP
 
 def _read_config():
@@ -35,6 +35,8 @@ def get_extensions():
         extensions["get_open_positions"] = get_open_positions
         extensions["get_buying_power"] = get_buying_power
         extensions["is_market_open_now"] = is_market_open_now
+        extensions["get_orders"] = get_orders
+        extensions["cancel_order"] = cancel_order
         extensions["get_events_next_week"] = fmp.get_events_next_week
         extensions["get_events_next_day"] = fmp.get_events_next_day
     if config["extensions"]["internet"]:
