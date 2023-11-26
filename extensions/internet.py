@@ -23,6 +23,8 @@ def google(query: str):
             article = _get_article(url)
             if article.text == "":
                 continue
+            if article.title == "Are you a robot?":
+                continue
             final_result.append({
                 "title": article.title,
                 "url": url
