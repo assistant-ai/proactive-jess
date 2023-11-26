@@ -1,10 +1,11 @@
 import yaml
 from .memory_extension import Memory
 from .google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
-from .simple_utils_extension import current_date_time, google, get_text_from_url
+from .simple_utils_extension import current_date_time
 from .local_bash_extension import send_bash_command_to_local_host
 from .alpaca.shares import cancel_order, get_ticker_prices, sell_shares, buy_shares, get_open_positions, get_buying_power, is_market_open_now, get_orders
 from .fmp.client import FMP
+from .internet import google, get_text_from_url
 
 def _read_config():
     with open("./config.yaml", 'r') as file:
