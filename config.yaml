@@ -4,4 +4,4 @@ extensions:
   current_date_time: true
   local_bash: false
   trading: true
-  inernet: true
+  internet: true

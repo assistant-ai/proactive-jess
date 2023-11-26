@@ -44,6 +44,7 @@ async def drop_chat(update, context):
 
 
 def message_handler(meesage_to_send):
+    print(meesage_to_send)
     url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={meesage_to_send}"
     return requests.get(url).json()
 

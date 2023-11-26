@@ -26,8 +26,10 @@ def current_date_time():
         "query": "Query to search for"
     }
 )
-def google(query):
-    return json.dumps([url for url in search(query, num_results=10)])
+def google(query: str):
+    result = json.dumps([url for url in search(query, num_results=10)])
+    print(result)
+    return result
 
 
 @jess_extension(
@@ -36,7 +38,7 @@ def google(query):
         "url": "url to read"
     }
 )
-def get_text_from_url(url):
+def get_text_from_url(url: str):
     article = Article(url)
     print("article object created")
     article.download()
