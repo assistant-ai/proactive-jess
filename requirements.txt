@@ -9,4 +9,7 @@ google-auth-oauthlib==1.1.0
 google-api-python-client==2.108.0
 google-cloud==0.34.0
 google-cloud-pubsub==2.18.4
-PyYAML==6.0.1
+PyYAML==6.0
+alpaca-trade-api==3.0.2
+googlesearch-python==1.2.3
+newspaper3k==0.2.*

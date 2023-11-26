@@ -1,8 +1,10 @@
 import yaml
 from .memory_extension import Memory
 from .google_calendar_extension import get_upcoming_calendar_events, create_google_calendar_event
-from .simple_utils_extension import current_date_time
+from .simple_utils_extension import current_date_time, google, get_text_from_url
 from .local_bash_extension import send_bash_command_to_local_host
+from .alpaca.shares import get_ticker_prices, sell_shares, buy_shares, get_open_positions, get_buying_power, is_market_open_now
+from .fmp.client import FMP
 
 def _read_config():
     with open("./config.yaml", 'r') as file:
@@ -25,4 +27,17 @@ def get_extensions():
         extensions["current_date_time"] = current_date_time
     if config["extensions"]["local_bash"]:
         extensions["send_bash_command_to_local_host"] = send_bash_command_to_local_host
+    if config["extensions"]["trading"]:
+        fmp = FMP.create_fmp()
+        extensions["get_ticker_prices"] = get_ticker_prices
+        extensions["sell_shares"] = sell_shares
+        extensions["buy_shares"] = buy_shares
+        extensions["get_open_positions"] = get_open_positions
+        extensions["get_buying_power"] = get_buying_power
+        extensions["is_market_open_now"] = is_market_open_now
+        extensions["get_events_next_week"] = fmp.get_events_next_week
+        extensions["get_events_next_day"] = fmp.get_events_next_day
+    if config["extensions"]["internet"]:
+        extensions["google"] = google
+        extensions["get_text_from_url"] = get_text_from_url
     return extensions

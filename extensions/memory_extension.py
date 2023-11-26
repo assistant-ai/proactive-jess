@@ -77,7 +77,6 @@ class Memory(object):
         # Perform the query
         return json.dumps(self._extract_sorted_facts(self.index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True)))
 
-
     def _extract_sorted_facts(self, results_dict):
         # Extracting the facts and their scores
         facts_with_scores = [(match['metadata']['fact'], match['score']) for match in results_dict['matches']]
@@ -88,7 +87,6 @@ class Memory(object):
         # Extracting only the facts from the sorted tuples
         sorted_fact_strings = [fact for fact, score in sorted_facts]
         return sorted_fact_strings
-
 
     @staticmethod
     def create_memory_extension():
