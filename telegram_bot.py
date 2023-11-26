@@ -3,6 +3,7 @@ from telegram import Bot
 from dotenv import load_dotenv
 from jess import Jess
 from extensions import get_extensions
+from urllib.parse import quote
 import os
 import requests
 
@@ -43,9 +44,9 @@ async def drop_chat(update, context):
     await update.message.reply_text("done")
 
 
-def message_handler(meesage_to_send):
-    print(meesage_to_send)
-    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={meesage_to_send}"
+def message_handler(message_to_send):
+    encoded_message = quote(message_to_send)
+    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={chat_id}&text={encoded_message}"
     return requests.get(url).json()
 
 
