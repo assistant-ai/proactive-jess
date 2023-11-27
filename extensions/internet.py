@@ -16,7 +16,7 @@ urls = {}
     }
 )
 def google(query: str):
-    result = [url for url in search(query, num_results=15)]
+    result = [url for url in search(query, num_results=10)]
     final_result = []
     for url in result:
         try:

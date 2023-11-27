@@ -4,6 +4,7 @@ from .google_calendar_extension import get_upcoming_calendar_events, create_goog
 from .simple_utils_extension import current_date_time
 from .local_bash_extension import send_bash_command_to_local_host
 from .alpaca.shares import cancel_order, get_ticker_prices, sell_shares, buy_shares, get_open_positions, get_buying_power, is_market_open_now, get_orders
+from .alpaca.account import get_performance
 from .fmp.client import FMP
 from .internet import google, get_text_from_url
 
@@ -38,6 +39,7 @@ def get_extensions():
         extensions["is_market_open_now"] = is_market_open_now
         extensions["get_orders"] = get_orders
         extensions["cancel_order"] = cancel_order
+        extensions["get_performance"] = get_performance
         extensions["get_events_next_week"] = fmp.get_events_next_week
         extensions["get_events_next_day"] = fmp.get_events_next_day
     if config["extensions"]["internet"]:

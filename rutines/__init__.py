@@ -2,6 +2,7 @@ import schedule
 import time
 import threading
 from .market_overview import MarketOverviewRutine
+from .daily_performance import DailyPerformanceRutine
 
 
 class RutineScheduler():
@@ -13,6 +14,7 @@ class RutineScheduler():
     @staticmethod
     def start_rutines(jess, schedule=schedule):
         MarketOverviewRutine(jess, schedule)
+        DailyPerformanceRutine(jess, schedule)
         rutine_scheduler = RutineScheduler(jess, schedule)
         thread = threading.Thread(target=rutine_scheduler._run)
         thread.start()
