@@ -42,7 +42,7 @@ def sell_shares(ticker_symbol: str, shares_qty: str):
             qty=shares,
             side='sell',
             type='market',
-            time_in_force='gtc'
+            time_in_force='day'
         )
         return f"Sold {shares} shares of {ticker_symbol}"
     except Exception as e:
@@ -65,7 +65,7 @@ def buy_shares(ticker_symbol: str, shares_qty: str):
             qty=shares,
             side='buy',
             type='market',
-            time_in_force='gtc'
+            time_in_force='day'
         ))
         return f"Bought {shares} shares of {ticker_symbol}"
     except Exception as e:
