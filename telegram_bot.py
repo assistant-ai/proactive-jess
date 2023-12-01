@@ -6,7 +6,6 @@ from extensions import get_extensions
 from prompts import investing_forecast_prompt
 from telegram_client import send_message
 import os
-import requests
 
 load_dotenv()
 

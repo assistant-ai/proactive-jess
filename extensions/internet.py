@@ -47,11 +47,21 @@ def _get_article(url):
     urls[url] = article
     return article
 
+@jess_extension(
+    description="get raw HTML of a specific url provided. Should be used if site does not have an article but something else, in this case you can just get all HTML from the site and look on it",
+    param_descriptions={
+        "url": "url, from where to download the HTML"
+    }
+)
+def get_raw_html(url: str):
+    article = _get_article(url)
+    return article.html
+
 
 @jess_extension(
-    description="read article from the url provided (can be used together with the google query)",
+    description="get text of a specific url provided",
     param_descriptions={
-        "url": "url to read"
+        "url": "url, from where to extract text for you to read"
     }
 )
 def get_text_from_url(url: str):

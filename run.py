@@ -3,7 +3,7 @@ import json
 
 class Run(object):
 
-    def __init__(self, run_id, thread_id, client, messages_handler, actions, logger):
+    def __init__(self, run_id, thread_id, client, messages_handler, actions, logger, system_message_handler):
         self.run_id = run_id
         self.thread_id = thread_id
         self.client = client
@@ -11,6 +11,7 @@ class Run(object):
         self.actions = actions
         self.logger = logger
         self._finished = False
+        self.system_message_handler = system_message_handler
 
     def run_status(self):
         status = self.client.beta.threads.runs.retrieve(
@@ -77,6 +78,7 @@ class Run(object):
         arg_string = action.function.arguments
         args = json.loads(arg_string)
         output = ""
+        self.system_message_handler(f"Executing {funciton_name} with args {args}")
         try:
             output = self.actions[funciton_name](**args)
         except Exception as e:

@@ -62,7 +62,7 @@ class Jess(object):
             thread_id=self.thread.id,
             assistant_id=self.assistent.id
         )
-        self.run = Run(run.id, self.thread.id, self.client, self, self.extensions, logger)  
+        self.run = Run(run.id, self.thread.id, self.client, self, self.extensions, logger, self._on_system_message)  
         self.run.execute()      
 
     @jess_extension(
@@ -76,6 +76,9 @@ class Jess(object):
         self.next_action_time = time.time() + int(sec_delay)
         self.next_message = message
         return "DONE"
+    
+    def _on_system_message(self, message):
+        self.message_handler(f"[SYSTEM]: {message}")
 
     def on_messages(self, messages):
         for message in messages:
@@ -149,7 +152,7 @@ class Jess(object):
                 **jess_assitent_args
             )
         jess = Jess(client, jess_assitent, message_handler, jess_chat_thread, extensions)
-        RutineScheduler.start_rutines(jess)
+        jess.rutine = RutineScheduler.start_rutines(jess)
         extensions["schedule_message"] = jess.schedule_message
         thread = threading.Thread(target=jess.execute)
         thread.start()

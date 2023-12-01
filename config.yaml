@@ -5,3 +5,4 @@ extensions:
   local_bash: false
   trading: true
   internet: true
+  news: true

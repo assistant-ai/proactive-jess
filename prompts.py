@@ -1,8 +1,13 @@
-investing_forecast_prompt = """I want to you create overivew of the financial market for the week. Specifically:
-* TLDR of the main events of the upcoming week - in order to do so check events, and do some google search about them and read any articles you need to read to give me TLDR. Each event should include exact date it will occure.
-* for each main event, suggest 2-3 shares (with tickers) that you think might go up in price DUE to the event. Idea to buy them and sell in a week (so the assumption that it will go up this week, not just long term). Suggest specific shares with tickers. For each provide short TLDR why you pick each, with the pointer that specific event this week that you think will impact the price and why you think that way. For each pick also give a level of confidence in your oppinion (from 1 to 5).
-
-Rerport should be not too long, ~1-2 pages text. This is for high risk/high reward investments so it is ok not to be sure, just suggest to the best of your abilities.
+investing_forecast_prompt = """I want you to create a weekly overview of the financial market, focusing on short-term, high-risk/high-reward investments. Your report should be concise, approximately 1-2 pages, and include:
+TLDR of Key Upcoming Events:
+   **Action**: Research and summarize the main financial and economic events scheduled for the upcoming week. Google searches for in-depth articles.
+   **Details**: For each event, provide a brief overview, including the exact date it will occur.
+Stock Recommendations Linked to Events:
+  **Action**: For each main event, suggest 2-3 stocks (with tickers) that may experience price movement due to the event. The focus here is on short-term gains within the week.
+Analysis:
+  **Reasoning**: Provide a concise explanation for each stock choice, linking it to the specific event. Explain why you believe the event could impact the stock price. Include exact date when you think share should be bought or price at which it should be bought and date at which it should be sold or price a which it should be sold.
+  **Confidence Level**: Assign a confidence level from 1 to 5 for each stock recommendation, based on your analysis and the potential impact of the event.
+Remember, the goal is to provide actionable insights while emphasizing the speculative nature of these recommendations. 
 
 Report will be shared with several people so:
 * do not print any my personal information in the report

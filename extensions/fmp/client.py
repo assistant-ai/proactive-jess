@@ -25,6 +25,26 @@ class FMP(object):
         return json.dumps(events)
     
     @jess_extension(
+    description="Get all the latest important news that have happened recently (and can impact markets).",
+        param_descriptions={}
+    )
+    def get_financial_news(self):
+        url = f"https://financialmodelingprep.com/api/v3/stock_news?page=0&apikey={self.key}"
+        news = self._get_jsonparsed_data(url)
+        return json.dumps(news)
+    
+    @jess_extension(
+    description="Get all the latest important news related to a specific ticker.",
+        param_descriptions={
+            "ticker": "Ticker symbol of the stock, for which news needs to be retrived."
+        }
+    )
+    def get_financial_news_about_specific_ticker(self, ticker: str):
+        url = f"https://financialmodelingprep.com/api/v3/stock_news?tickers={ticker}&limit=10&page=0&apikey={self.key}"
+        news = self._get_jsonparsed_data(url)
+        return json.dumps(news)
+    
+    @jess_extension(
     description="Get all the important ecenomica events for the next 7 days that might impact market.",
         param_descriptions={}
     )
@@ -51,4 +71,4 @@ class FMP(object):
     
 if __name__ == "__main__":
     fmp = FMP.create_fmp()
-    print(fmp.get_events_next_day())
+    print(fmp.get_financial_news())
