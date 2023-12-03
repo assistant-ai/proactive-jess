@@ -51,18 +51,18 @@ def sell_shares(ticker_symbol: str, shares_qty: str):
 @jess_extension(
     description="Buy specific amount of shares on Alpaca platform",
     param_descriptions={
-        "ticker_symbol": "Ticker symbol of the stock, which to buy",
-        "shares_qty": "Number of shares to buy.Should be float"
+        "ticker_symbol": "Ticker symbol of the stock, which to buy.",
+        "notional": "notional to buy. Should be float passed as string."
     }
 )
-def buy_shares(ticker_symbol: str, shares_qty: str):
-    shares = float(shares_qty)
+def buy_shares(ticker_symbol: str, notional: str):
+    notional = float(notional)
     try:
         api = get_api()
         # Submit a market order to buy 1 share of Apple at market price
         print(api.submit_order(
             symbol=ticker_symbol,
-            qty=shares,
+            notional=notional,
             side='buy',
             type='market',
             time_in_force='day'
