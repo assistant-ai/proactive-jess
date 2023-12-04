@@ -1,5 +1,5 @@
 from rest.main_app import app
-from rest import auth_service
+from rest import auth_service, openai_service
 from extensions import memory_extension
 
 

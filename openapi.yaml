@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: Jess Backend
+  description: API For different actions for Jessica.
+  version: "v1"
+servers:
+  - url: PLUGIN_HOSTNAME
+paths:
+  /memories/:
+    get:
+      operationId: queryMemory
+      summary: Ask a question about a user and relevant memories/facts will be retrived
+      parameters:
+        - name: question
+          in: query
+          required: true
+          schema:
+            type: string
+            description: Query/question to use to retrieve relevant memory/facts about user
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: number
+            description: Amount of facts/memories to return (sorted by relevance), default is 5
+      responses:
+        '200':
+          description: Successfully retrieved the relevant memory
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  memories:
+                    type: array
+                    description: A list of relevant memories or facts in response to the question
+                    items:
+                      type: string
+        '400':
+          description: Bad request
+        '500':
+          description: You need to re-authenticate
