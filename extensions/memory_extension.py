@@ -107,8 +107,32 @@ class Memory(object):
             pass
         return Memory(user_id, index)
 
+
+@app.route('/memories/', methods=['POST'])
+async def add_memory():
+    data = await request.get_json(force=True)
+
+    if 'memory' not in data:
+        return jsonify({'error': 'Bad Request', 'message': 'Your request is missing "memeory"'}), 400
+
+    memory = data['memory']
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    
+    memory_client = Memory.create_memory_extension(user_id=user_id)
+    memory_client.store_in_long_term_memory(memory)
+
+    return jsonify({'message': 'Memory added successfully'}), 201
+
+
 @app.route('/memories/', methods=['GET'])
-async def get_movies():
+async def get_memories():
     # Extract the token from the Authorization header
     user_id = None
     if 'Authorization' not in request.headers:

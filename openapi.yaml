@@ -6,7 +6,43 @@ info:
 servers:
   - url: PLUGIN_HOSTNAME
 paths:
+  /current/datetime:
+    get:
+      operationId: getCurrentDateTime
+      summary: Get the current date and time
+      responses:
+        '200':
+          description: Current date and time returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datetime:
+                    type: string
+                    example: '2023-12-04T15:30:00Z'
+                    description: The current date and time in ISO 8601 format
+        '500':
+          description: Internal server error
   /memories/:
+    post:
+      operationId: storeMemory
+      summary: Store a new memory/fact about a user so you can retrive it later
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memory:
+                  type: string
+                  description: The memory or fact to store about the user
+      responses:
+        '200':
+          description: Memory stored successfully
+        '400':
+          description: Bad request
     get:
       operationId: queryMemory
       summary: Ask a question about a user and relevant memories/facts will be retrived

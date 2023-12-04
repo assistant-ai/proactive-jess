@@ -6,7 +6,8 @@ from newspaper import Article
 from newspaper.article import ArticleDownloadState
 
 from .jess_extension import jess_extension
-from googlesearch import search
+from rest.main_app import app
+from quart import jsonify
 
 
 @jess_extension(
@@ -21,5 +22,8 @@ def current_date_time():
     return now.strftime("%Y-%m-%d %H:%M:%S")
 
 
-if __name__ == "__main__":
-    print(google("test"))
+@app.route('/current/datetime', methods=['GET'])
+async def get_current_date_time():
+    return jsonify({
+        "datetime": current_date_time()
+    }), 200
