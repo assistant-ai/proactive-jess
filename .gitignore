@@ -2,6 +2,7 @@
 creds.json
 jess_local_connector/start.sh
 jess_local_connector/com.jess.agent.plist
+auth-service-account.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

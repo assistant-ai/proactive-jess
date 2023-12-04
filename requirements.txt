@@ -14,3 +14,8 @@ alpaca-trade-api==3.0.2
 googlesearch-python==1.2.3
 newspaper3k==0.2.*
 schedule==1.2.1
+quart==0.18
+quart-cors==0.6
+google-cloud-firestore==2.11
+hypercorn==0.14
+requests-oauthlib==1.3

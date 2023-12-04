@@ -5,6 +5,9 @@ import json
 import uuid
 from dotenv import load_dotenv
 from .jess_extension import jess_extension
+from rest.token_management import get_user_id
+from rest.main_app import app
+from quart import jsonify, request
 
 
 load_dotenv()
@@ -63,7 +66,7 @@ class Memory(object):
             "count": "Amount of facts/memories to return (sorted by relevance), default is 5"
         }
     )
-    def query_from_long_term_memory(self, question: str, count: int):
+    def query_from_long_term_memory(self, question: str, count: int, json_dump=True):
         if count <= 0:
             count = 5
         # Assuming 'query_vector' is the vector representation of your query
@@ -75,7 +78,11 @@ class Memory(object):
         }
 
         # Perform the query
-        return json.dumps(self._extract_sorted_facts(self.index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True)))
+        result = self._extract_sorted_facts(self.index.query(filter=query_filter, top_k=count, vector=query_vector, include_metadata=True))
+        if json_dump:
+            return json.dumps(result)
+        else:
+            return result
 
     def _extract_sorted_facts(self, results_dict):
         # Extracting the facts and their scores
@@ -89,7 +96,7 @@ class Memory(object):
         return sorted_fact_strings
 
     @staticmethod
-    def create_memory_extension():
+    def create_memory_extension(user_id=USER_ID):
         index_name = 'user-facts-index'
         index = None
         try:
@@ -98,5 +105,29 @@ class Memory(object):
             index = pinecone.Index(index_name)
         except:
             pass
-        return Memory(USER_ID, index)
-    
+        return Memory(user_id, index)
+
+@app.route('/memories/', methods=['GET'])
+async def get_movies():
+    # Extract the token from the Authorization header
+    user_id = None
+    if 'Authorization' not in request.headers:
+        return jsonify({"error": "please re-authentificate"}), 500
+    token = request.headers.get('Authorization').split(' ')[1]
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    memory_client = Memory.create_memory_extension(user_id=user_id)
+    query = request.args.get("question")
+    count = 0
+    if "count" in request.args:
+        count = int(request.args.get("count"))
+
+    response = {
+        "memories": memory_client.query_from_long_term_memory(query, count, json_dump=False)
+    }
+
+    return jsonify(response), 200
