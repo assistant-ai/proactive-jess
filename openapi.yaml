@@ -6,6 +6,72 @@ info:
 servers:
   - url: PLUGIN_HOSTNAME
 paths:
+paths:
+  /financial/fmp/news:
+    get:
+      operationId: getFinancialNews
+      summary: Get all the latest important news that have happened recently (and can impact markets).
+      responses:
+        '200':
+          description: Successfully retrieved financial news
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /financial/fmp/news/ticker:
+    get:
+      operationId: getFinancialNewsByTicker
+      summary: Get all the latest important news related to a specific ticker.
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Ticker symbol of the stock, for which news needs to be retrieved.
+      responses:
+        '200':
+          description: Successfully retrieved news for the specified ticker
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Ticker parameter is missing
+
+  /financial/fmp/events/nextweek:
+    get:
+      operationId: getEventsNextWeek
+      summary: Get all the important economic events for the next 7 days that might impact the market.
+      responses:
+        '200':
+          description: Successfully retrieved economic events for the next week
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /financial/fmp/events/nextday:
+    get:
+      operationId: getEventsNextDay
+      summary: Get all the important economic events for the next day that might impact the market.
+      responses:
+        '200':
+          description: Successfully retrieved economic events for the next day
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
   /finances/alpaca/performance:
     get:
       operationId: getPerformance
