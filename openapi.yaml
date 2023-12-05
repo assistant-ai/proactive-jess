@@ -6,6 +6,20 @@ info:
 servers:
   - url: PLUGIN_HOSTNAME
 paths:
+  /finances/alpaca/performance:
+    get:
+      operationId: getPerformance
+      summary: Get overall account performance from all the investments
+      responses:
+        '200':
+          description: Successfully retrieved the account performance
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Net Investment: $1000.00\nCurrent Portfolio Value: $1500.00\nPortfolio Performance: 50.00%"
+        '500':
+          description: Error occurred, possibly due to authentication issues
   /current/datetime:
     get:
       operationId: getCurrentDateTime

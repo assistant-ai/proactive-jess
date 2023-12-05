@@ -123,11 +123,11 @@ async def callback():
 
 
 def request_user_id(access_token=None):
-    logger.debug("auth token: ", str(session['oauth_token']))
+    logger.debug(f"auth token: {str(session['oauth_token'])}")
     google = OAuth2Session(GCP_CLIENT_ID, token=access_token)
     full_response = google.get('https://www.googleapis.com/oauth2/v1/userinfo')
 
-    logger.debug("User ID Response: ", str(full_response.json()))
+    logger.debug(f"User ID Response: {str(full_response.json())}")
     # Parse the response to get user ID or email
     user_id = full_response.json()["id"]
     return user_id
