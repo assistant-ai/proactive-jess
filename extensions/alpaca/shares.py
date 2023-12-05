@@ -1,6 +1,9 @@
 import json
 
-from . import get_api
+from . import get_api, get_api_per_user
+from rest.token_management import get_user_id
+from quart import jsonify, request
+from rest.main_app import app
 
 from extensions.jess_extension import jess_extension
 
@@ -153,5 +156,162 @@ def cancel_order(order_id: str):
         return f"An error occurred: {e}"
 
 
-if __name__ == "__main__":
-    print(get_orders())
+@app.route('/finances/alpaca/sell/all', methods=['POST'])
+async def sell_all():
+    data = await request.json
+    ticker = data.get('ticker')
+    if not ticker:
+        return jsonify({"error": "Ticker parameter is missing"}), 400
+
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    api = get_api_per_user(user_id)
+
+    # Fetch current position
+    position = api.get_position(ticker)
+    qty = position.qty
+
+    # Submit sell order
+    api.submit_order(symbol=ticker, qty=qty, side='sell')
+    return jsonify({"message": f"Submitted sell order for all shares of {ticker}"}), 200
+
+
+@app.route('/finances/alpaca/sell/stoploss', methods=['POST'])
+async def sell_stop_loss():
+    data = await request.json
+    ticker = data.get('ticker')
+    stop_price = data.get('stop_price')
+    if not ticker or not stop_price:
+        return jsonify({"error": "Ticker and stop price parameters are required"}), 400
+
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    api = get_api_per_user(user_id)
+
+    position = api.get_position(ticker)
+    qty = position.qty
+
+    # Submit sell order with stop price
+    api.submit_order(symbol=ticker, qty=qty, side='sell', type='stop', stop_price=stop_price)
+    return jsonify({"message": f"Submitted stop loss sell order for {ticker} at {stop_price}"}), 200
+
+
+@app.route('/finances/alpaca/sell/takeprofit', methods=['POST'])
+async def sell_take_profit():
+    data = await request.json
+    ticker = data.get('ticker')
+    limit_price = data.get('limit_price')
+    if not ticker or not limit_price:
+        return jsonify({"error": "Ticker and limit price parameters are required"}), 400
+
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    api = get_api_per_user(user_id)
+
+    position = api.get_position(ticker)
+    qty = position.qty
+
+    # Submit sell order with limit price
+    api.submit_order(symbol=ticker, qty=qty, side='sell', type='limit', limit_price=limit_price)
+    return jsonify({"message": f"Submitted take profit sell order for {ticker} at {limit_price}"}), 200
+
+
+@app.route('/finances/alpaca/portfolio', methods=['GET'])
+async def rest_get_open_positions():
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    api = get_api_per_user(user_id)
+    api = get_api()
+    result = {}
+    portfolio = api.list_positions()
+    if not portfolio:
+        return jsonify("No open positions"), 200
+    for position in portfolio:
+        result[position.symbol] = position.qty
+    return  jsonify(result), 200
+
+
+@app.route('/finances/alpaca/buy/conditional', methods=['POST'])
+async def buy_conditional():
+    data = await request.json
+    ticker = data.get('ticker')
+    limit_price = data.get('limit_price')
+    notional = data.get('notional')
+
+    if not ticker or not limit_price or not notional:
+        return jsonify({"error": "Ticker, limit price, and notional amount are required"}), 400
+
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authenticate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authenticate"}), 500
+
+    api = get_api_per_user(user_id)
+
+    # Submit buy limit order
+    api.submit_order(symbol=ticker, notional=notional, side='buy', type='limit', limit_price=limit_price)
+    return jsonify({"message": f"Submitted limit buy order for {ticker} at ${limit_price}, total notional ${notional}"}), 200
+
+
+@app.route('/finances/alpaca/orders', methods=['GET'])
+async def rest_get_orders():
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "Please re-authenticate"}), 500
+    if not user_id:
+        return jsonify({"error": "Please re-authenticate"}), 500
+
+    api = get_api_per_user(user_id)
+
+    try:
+        orders = api.list_orders(status="open")
+        orders_info = [{"symbol": order.symbol, "quantity": order.qty, "order_id": order.id} for order in orders]
+        return jsonify(orders_info), 200
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+@app.route('/finances/alpaca/market/open', methods=['GET'])
+async def rest_is_market_open_now():
+    token = request.headers.get('Authorization').split(' ')[1]
+    user_id = None
+    try:
+        user_id = get_user_id(token)
+    except:
+        return jsonify({"error": "please re-authentificate"}), 500
+    if not user_id:
+        return jsonify({"error": "please re-authentificate"}), 500
+    api = get_api_per_user(user_id)
+    clock = api.get_clock()
+    return jsonify(clock.is_open), 200

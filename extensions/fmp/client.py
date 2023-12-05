@@ -30,6 +30,11 @@ class FMP(object):
         if self.as_string:
             return json.dumps(events)
         return events
+
+    def _get_ernings_calendar(self, from_date, to_date, filter_low=True):
+        url = f"https://financialmodelingprep.com/api/v3/earning_calendar?from={from_date}&to={to_date}&apikey={self.key}"
+        events = self._get_jsonparsed_data(url)
+        return events
     
     @jess_extension(
     description="Get all the latest important news that have happened recently (and can impact markets).",
@@ -38,9 +43,12 @@ class FMP(object):
     def get_financial_news(self):
         url = f"https://financialmodelingprep.com/api/v3/stock_news?page=0&apikey={self.key}"
         news = self._get_jsonparsed_data(url)
+        # Filter for the latest 20 articles and extract only title and URL
+        filtered_news = [{"title": article["title"], "url": article["url"]} for article in news[:20]]
+
         if self.as_string:
-            return json.dumps(news)
-        return news
+            return json.dumps(filtered_news)
+        return filtered_news
     
     @jess_extension(
     description="Get all the latest important news related to a specific ticker.",
@@ -58,6 +66,23 @@ class FMP(object):
             return json.dumps(filtered_news)
         return filtered_news
     
+    def get_earnings_next_week(self):
+        today = datetime.now().date()  # Get the current date without time
+        next_week_start = today + timedelta(days=(7 - today.weekday()))
+        next_week_end = next_week_start + timedelta(days=6)
+        all_earnings = self._get_ernings_calendar(next_week_start, next_week_end)
+        tickers = list({entry['symbol'] for entry in all_earnings})
+        return tickers
+    
+    def get_all_earnings_for_ticker(self, ticker):
+        current_year = datetime.now().year
+        start_date = f"{current_year}-01-01"
+        end_date = f"{current_year}-12-31"
+        earnings = self._get_ernings_calendar(start_date, end_date)
+        
+        ticker_earnings = [entry for entry in earnings if entry['symbol'] == ticker]
+        return ticker_earnings
+        
     @jess_extension(
     description="Get all the important ecenomica events for the next 7 days that might impact market.",
         param_descriptions={}
@@ -100,31 +125,48 @@ class FMP(object):
         return FMP(key)
     
 
-
 @app.route('/financial/fmp/news', methods=['GET'])
 async def financial_news():
     fmp = FMP.create_fmp_from_request()
     return jsonify(fmp.get_financial_news()), 200
 
+
 @app.route('/financial/fmp/news/ticker', methods=['GET'])
-def financial_news_ticker():
+async def financial_news_ticker():
     fmp = FMP.create_fmp_from_request()
     ticker = request.args.get('ticker')
     if not ticker:
         return jsonify({"error": "Ticker parameter is missing"}), 400
     return jsonify(fmp.get_financial_news_about_specific_ticker(ticker)), 200
 
+
+@app.route('/financial/fmp/earnings/ticker', methods=['GET'])
+async def earnings_per_ticker():
+    fmp = FMP.create_fmp_from_request()
+    ticker = request.args.get('ticker')
+    if not ticker:
+        return jsonify({"error": "Ticker parameter is missing"}), 400
+    return jsonify(fmp.get_all_earnings_for_ticker(ticker)), 200
+    
+
+@app.route('/financial/fmp/earnings/nextweek', methods=['GET'])
+async def earnings_next_week():
+    fmp = FMP.create_fmp_from_request()
+    return jsonify(fmp.get_earnings_next_week()), 200
+
+
 @app.route('/financial/fmp/events/nextweek', methods=['GET'])
-def events_next_week():
+async def events_next_week():
     fmp = FMP.create_fmp_from_request()
     return jsonify(fmp.get_events_next_week()), 200
 
+
 @app.route('/financial/fmp/events/nextday', methods=['GET'])
-def events_next_day():
+async def events_next_day():
     fmp = FMP.create_fmp_from_request()
     return jsonify(fmp.get_events_next_day()), 200
 
     
 if __name__ == "__main__":
     fmp = FMP.create_fmp()
-    print(fmp.get_financial_news())
+    print(fmp.get_all_earnings_for_ticker("AAPL"))

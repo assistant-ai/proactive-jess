@@ -6,7 +6,189 @@ info:
 servers:
   - url: PLUGIN_HOSTNAME
 paths:
-paths:
+  /finances/alpaca/sell/all:
+    post:
+      operationId: sellAll
+      summary: Sell all shares of a specific ticker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+      responses:
+        '200':
+          description: Successfully submitted sell order
+        '400':
+          description: Ticker parameter is missing
+        '500':
+          description: Authentication error
+
+  /finances/alpaca/sell/stoploss:
+    post:
+      operationId: sellStopLoss
+      summary: Submit a stop loss sell order for a specific ticker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                stop_price:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Successfully submitted stop loss sell order
+        '400':
+          description: Ticker and stop price parameters are required
+        '500':
+          description: Authentication error
+
+  /finances/alpaca/sell/takeprofit:
+    post:
+      operationId: sellTakeProfit
+      summary: Submit a take profit sell order for a specific ticker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                limit_price:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Successfully submitted take profit sell order
+        '400':
+          description: Ticker and limit price parameters are required
+        '500':
+          description: Authentication error
+
+  /finances/alpaca/portfolio:
+    get:
+      operationId: getOpenPositions
+      summary: Retrieve open positions in the user's Alpaca portfolio
+      responses:
+        '200':
+          description: Successfully retrieved open positions
+        '500':
+          description: Authentication error
+
+  /finances/alpaca/buy/conditional:
+    post:
+      operationId: buyConditional
+      summary: Submit a conditional buy limit order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                limit_price:
+                  type: number
+                  format: float
+                notional:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Successfully submitted limit buy order
+        '400':
+          description: Ticker, limit price, and notional amount are required
+        '500':
+          description: Authentication error
+
+  /finances/alpaca/orders:
+    get:
+      operationId: getOpenOrders
+      summary: Retrieve list of open orders
+      responses:
+        '200':
+          description: Successfully retrieved list of open orders
+        '500':
+          description: Authentication error
+
+  /financial/fmp/earnings/ticker:
+    get:
+      operationId: getAllEarningsForTicker
+      summary: Get all earnings for a specific ticker
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Ticker symbol for which all earnings are to be retrieved
+      responses:
+        '200':
+          description: Successfully retrieved all earnings for the specified ticker
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Ticker parameter is missing
+
+  /financial/fmp/earnings/nextweek:
+    get:
+      operationId: getEarningsNextWeek
+      summary: Get earnings for the next week
+      responses:
+        '200':
+          description: Successfully retrieved earnings for the next week
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /finances/alpaca/portfolio:
+    get:
+      operationId: getOpenPositions
+      summary: Retrieve the open positions in a user's Alpaca portfolio
+      responses:
+        '200':
+          description: Successfully retrieved open positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Error occurred, possibly due to authentication issues
+
+  /finances/alpaca/market/open:
+    get:
+      operationId: isMarketOpenNow
+      summary: Check if the market is open now for a user's Alpaca account
+      responses:
+        '200':
+          description: Successfully retrieved market open status
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '500':
+          description: Error occurred, possibly due to authentication issues
+
   /financial/fmp/news:
     get:
       operationId: getFinancialNews

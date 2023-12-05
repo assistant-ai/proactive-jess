@@ -15,10 +15,10 @@ class RutineScheduler():
 
     @staticmethod
     def start_rutines(jess, schedule=schedule):
-        MarketOverviewRutine(jess, schedule)
+        # MarketOverviewRutine(jess, schedule)
         DailyPerformanceRutine(jess, schedule)
         DropChatThreadRutine(jess, schedule)
-        DailyNewsRutine(jess, schedule)
+        # DailyNewsRutine(jess, schedule)
         rutine_scheduler = RutineScheduler(jess, schedule)
         thread = threading.Thread(target=rutine_scheduler._run)
         thread.start()
