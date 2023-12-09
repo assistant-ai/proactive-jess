@@ -27,10 +27,10 @@ paths:
         '500':
           description: Authentication error
 
-  /finances/alpaca/sell/stoploss:
+  /finances/alpaca/sell/stoplimit:
     post:
-      operationId: sellStopLoss
-      summary: Submit a stop loss sell order for a specific ticker
+      operationId: sellStopLimit
+      summary: Submit a stop limit sell order for a specific ticker
       requestBody:
         required: true
         content:
@@ -40,40 +40,30 @@ paths:
               properties:
                 ticker:
                   type: string
+                  description: The ticker symbol for the stock
                 stop_price:
                   type: number
                   format: float
-      responses:
-        '200':
-          description: Successfully submitted stop loss sell order
-        '400':
-          description: Ticker and stop price parameters are required
-        '500':
-          description: Authentication error
-
-  /finances/alpaca/sell/takeprofit:
-    post:
-      operationId: sellTakeProfit
-      summary: Submit a take profit sell order for a specific ticker
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                ticker:
-                  type: string
+                  description: The stop price to trigger the limit order
                 limit_price:
                   type: number
                   format: float
+                  description: The limit price at which the stock should be sold
       responses:
         '200':
-          description: Successfully submitted take profit sell order
+          description: Successfully submitted stop limit sell order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Submitted stop limit sell order for AAPL with stop price 150.00 and limit price 148.00
         '400':
-          description: Ticker and limit price parameters are required
+          description: Missing or invalid parameters
         '500':
-          description: Authentication error
+          description: Authentication error or server error
 
   /finances/alpaca/portfolio:
     get:

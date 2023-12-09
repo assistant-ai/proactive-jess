@@ -14,6 +14,7 @@ def save_google_auth_token(user_id, token):
         u'google_auth_token': token
     })
 
+
 def get_google_auth_token(user_id):
     doc_ref = db.collection(u'google_auth_tokens').document(user_id)
     doc = doc_ref.get()
@@ -21,6 +22,7 @@ def get_google_auth_token(user_id):
         return doc.to_dict()["google_auth_token"]
     else:
         return None
+
 
 def get_user_token(user_id):
     doc_ref = db.collection(u'tokens').document(user_id)
@@ -30,6 +32,7 @@ def get_user_token(user_id):
     else:
         return None
     
+
 def generate_random_token_for_user(user_id):
     token = secrets.token_hex(8)
     doc_ref = db.collection(u'tokens').document(user_id)
@@ -38,9 +41,11 @@ def generate_random_token_for_user(user_id):
     })
     return token
 
+
 def invalidate_token_for_user(user_id):
     doc_ref = db.collection(u'tokens').document(user_id)
     doc_ref.delete()
+
 
 def verify_token(user_id, token):
     doc_ref = db.collection(u'tokens').document(user_id)
@@ -49,6 +54,7 @@ def verify_token(user_id, token):
         return doc.to_dict()["token"] == token
     else:
         return False
+
 
 def get_user_id(token):
     doc_ref = db.collection(u'tokens').where(u'token', u'==', token)

@@ -182,56 +182,33 @@ async def sell_all():
     return jsonify({"message": f"Submitted sell order for all shares of {ticker}"}), 200
 
 
-@app.route('/finances/alpaca/sell/stoploss', methods=['POST'])
-async def sell_stop_loss():
+@app.route('/finances/alpaca/sell/stoplimit', methods=['POST'])
+async def sell_stop_limit():
     data = await request.json
     ticker = data.get('ticker')
     stop_price = data.get('stop_price')
-    if not ticker or not stop_price:
-        return jsonify({"error": "Ticker and stop price parameters are required"}), 400
-
-    token = request.headers.get('Authorization').split(' ')[1]
-    user_id = None
-    try:
-        user_id = get_user_id(token)
-    except:
-        return jsonify({"error": "please re-authentificate"}), 500
-    if not user_id:
-        return jsonify({"error": "please re-authentificate"}), 500
-    api = get_api_per_user(user_id)
-
-    position = api.get_position(ticker)
-    qty = position.qty
-
-    # Submit sell order with stop price
-    api.submit_order(symbol=ticker, qty=qty, side='sell', type='stop', stop_price=stop_price)
-    return jsonify({"message": f"Submitted stop loss sell order for {ticker} at {stop_price}"}), 200
-
-
-@app.route('/finances/alpaca/sell/takeprofit', methods=['POST'])
-async def sell_take_profit():
-    data = await request.json
-    ticker = data.get('ticker')
     limit_price = data.get('limit_price')
-    if not ticker or not limit_price:
-        return jsonify({"error": "Ticker and limit price parameters are required"}), 400
+
+    if not ticker or not stop_price or not limit_price:
+        return jsonify({"error": "Ticker, stop price, and limit price parameters are required"}), 400
 
     token = request.headers.get('Authorization').split(' ')[1]
     user_id = None
     try:
         user_id = get_user_id(token)
     except:
-        return jsonify({"error": "please re-authentificate"}), 500
+        return jsonify({"error": "Please re-authenticate"}), 500
     if not user_id:
-        return jsonify({"error": "please re-authentificate"}), 500
+        return jsonify({"error": "Please re-authenticate"}), 500
+
     api = get_api_per_user(user_id)
 
     position = api.get_position(ticker)
     qty = position.qty
 
-    # Submit sell order with limit price
-    api.submit_order(symbol=ticker, qty=qty, side='sell', type='limit', limit_price=limit_price)
-    return jsonify({"message": f"Submitted take profit sell order for {ticker} at {limit_price}"}), 200
+    # Submit a stop limit sell order
+    api.submit_order(symbol=ticker, qty=qty, side='sell', type='stop_limit', stop_price=stop_price, limit_price=limit_price)
+    return jsonify({"message": f"Submitted stop limit sell order for {ticker} with stop price {stop_price} and limit price {limit_price}"}), 200
 
 
 @app.route('/finances/alpaca/portfolio', methods=['GET'])
